@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  db:
+    image: sqlite
+    volumes:
+      - ./db:/var/lib/sqlite
+
+  web:
+    build: .
+    command: ruby app.rb
+    volumes:
+      - .:/app
+    ports:
+      - "4567:4567"
+    depends_on:
+      - db
