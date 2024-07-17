@@ -4,19 +4,19 @@ require 'sequel/extensions/migration'
 namespace :db do
   desc 'Run migrations'
   task :migrate do
-    DB = Sequel.sqlite('db/development.sqlite3')
+    DB = Sequel.connect(ENV['DATABASE_URL'])
     Sequel::Migrator.run(DB, 'db/migrate')
   end
 
   desc 'Rollback the last migration'
   task :rollback do
-    DB = Sequel.sqlite('db/development.sqlite3')
+    DB = Sequel.connect(ENV['DATABASE_URL'])
     Sequel::Migrator.run(DB, 'db/migrate', target: DB[:schema_info].get(:version) - 1)
   end
 
   desc 'Setup the database'
   task :setup do
-    DB = Sequel.sqlite('db/development.sqlite3')
+    DB = Sequel.connect(ENV['DATABASE_URL'])
     Sequel.extension :migration
     Sequel::Migrator.run(DB, 'db/migrate')
     puts 'Database has been set up successfully!'
@@ -24,7 +24,7 @@ namespace :db do
 
   desc 'Dump the current schema'
   task :dump_schema do
-    DB = Sequel.sqlite('db/development.sqlite3')
+    DB = Sequel.connect(ENV['DATABASE_URL'])
     File.open('db/schema.rb', 'w') do |file|
       DB.tables.each do |table|
         schema = DB.schema(table)

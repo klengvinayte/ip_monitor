@@ -1,8 +1,36 @@
-version: '3.8'  # Обновите версию, если это необходимо
+#version: '3.8'
 services:
-  web:
-    build: .
+  db:
+    image: postgres:14.2-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: <%= ENV['POSTGRES_USER'] %>
+      POSTGRES_PASSWORD: <%= ENV['POSTGRES_PASSWORD'] %>
+      POSTGRES_DB: <%= ENV['POSTGRES_DB'] %>
     ports:
-      - '4567:4567'
+      - "5433:5432"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4567:4567"
     volumes:
       - .:/app
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://<%= ENV['POSTGRES_USER'] %>:<%= ENV['POSTGRES_PASSWORD'] %>@db:5432/<%= ENV['POSTGRES_DB'] %>
+    depends_on:
+      - db
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: myapp_network
