@@ -2,6 +2,7 @@ require 'sinatra'
 require 'sequel'
 require 'json'
 require 'rufus-scheduler'
+require 'net/ping'
 
 DB = Sequel.sqlite('db/development.sqlite3')
 
@@ -13,10 +14,6 @@ require './services/statistics_service'
 class App < Sinatra::Base
   before do
     content_type :json
-  end
-
-  get '/' do
-    "Hello, World!"
   end
 
   post '/ips' do
@@ -36,7 +33,7 @@ class App < Sinatra::Base
       ip.update(enabled: true)
       ip.to_json
     else
-      halt 404, { error: "IP Address not found" }.to_json
+      halt 404, { error: 'IP Address not found' }.to_json
     end
   end
 
@@ -58,7 +55,7 @@ class App < Sinatra::Base
       stats = StatisticsService.calculate(ip, time_from, time_to)
       stats.to_json
     else
-      halt 404, { error: "IP Address not found" }.to_json
+      halt 404, { error: 'IP Address not found' }.to_json
     end
   end
 
@@ -77,4 +74,4 @@ scheduler.every '1m' do
   PingService.perform_checks
 end
 
-run App.run!
+# run App.run!

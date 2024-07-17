@@ -1,17 +1,8 @@
-version: '3'
-
+version: '3.8'  # Обновите версию, если это необходимо
 services:
-  db:
-    image: sqlite
-    volumes:
-      - ./db:/var/lib/sqlite
-
   web:
     build: .
-    command: ruby app.rb
+    ports:
+      - '4567:4567'
     volumes:
       - .:/app
-    ports:
-      - "4567:4567"
-    depends_on:
-      - db
