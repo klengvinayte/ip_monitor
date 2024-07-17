@@ -12,6 +12,8 @@ DB = Sequel.connect(
   "postgres://#{ENV['POSTGRES_USER']}:#{ENV['POSTGRES_PASSWORD']}@db:5432/#{ENV['POSTGRES_DB']}"
 )
 
+# DB = Sequel.connect('postgres://user:password@db:5432/mydatabase')
+
 require './models/ip_address'
 require './models/ping_result'
 require './services/ping_service'
