@@ -1,31 +1,34 @@
 class StatisticsService
   def self.calculate(ip_address, time_from, time_to)
-    results = ip_address.ping_results_dataset.where(created_at: time_from..time_to).all
+    query = <<-SQL
+      SELECT 
+        AVG(rtt) AS mean_rtt,
+        MIN(rtt) AS min_rtt,
+        MAX(rtt) AS max_rtt,
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY rtt) AS median_rtt,
+        STDDEV(rtt) AS std_dev_rtt,
+        COUNT(*) AS total_checks,
+        SUM(CASE WHEN success = false THEN 1 ELSE 0 END) AS failed_checks
+      FROM ping_results
+      WHERE ip_address_id = ? 
+        AND created_at BETWEEN ? AND ?
+    SQL
 
-    return { error: 'No data available for the given period' } if results.empty?
+    results = DB[query, ip_address.id, time_from, time_to].first
 
-    rtts = results.select(&:success).map(&:rtt)
+    if results.nil?
+      return { error: 'No data available for the specified time range' }
+    else
+      packet_loss = (results[:failed_checks].to_f / results[:total_checks]) * 100.0
 
-    return { error: 'No valid RTT data available' } if rtts.empty?
-
-    mean = rtts.sum / rtts.size
-    min = rtts.min
-    max = rtts.max
-    sorted_rtts = rtts.sort
-    median = sorted_rtts[rtts.size / 2]
-    variance = rtts.map { |rtt| (rtt - mean) ** 2 }.sum / rtts.size
-    std_dev = Math.sqrt(variance)
-    total_checks = results.size
-    failed_checks = results.count { |result| !result.success }
-    packet_loss = 100.0 * failed_checks / total_checks
-
-    {
-      mean_rtt: mean,
-      min_rtt: min,
-      max_rtt: max,
-      median_rtt: median,
-      std_dev_rtt: std_dev,
-      packet_loss: packet_loss
-    }
+      {
+        mean_rtt: results[:mean_rtt],
+        min_rtt: results[:min_rtt],
+        max_rtt: results[:max_rtt],
+        median_rtt: results[:median_rtt],
+        std_dev_rtt: results[:std_dev_rtt],
+        packet_loss: packet_loss
+      }
+    end
   end
 end
