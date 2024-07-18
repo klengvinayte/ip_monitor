@@ -5,6 +5,8 @@ require 'rufus-scheduler'
 require 'net/ping'
 require 'dotenv'
 require 'pg'
+require 'ipaddr'
+require_relative 'helpers'
 
 Dotenv.load
 
@@ -12,22 +14,32 @@ DB = Sequel.connect(
   "postgres://#{ENV['POSTGRES_USER']}:#{ENV['POSTGRES_PASSWORD']}@db:5432/#{ENV['POSTGRES_DB']}"
 )
 
-# DB = Sequel.connect('postgres://user:password@db:5432/mydatabase')
-
 require './models/ip_address'
 require './models/ping_result'
 require './services/ping_service'
 require './services/statistics_service'
 
 class App < Sinatra::Base
+  helpers Helpers
+
   before do
     content_type :json
   end
 
   post '/ips' do
-    data = JSON.parse(request.body.read)
-    ip = IPAddress.create(enabled: data['enabled'], ip: data['ip'])
-    ip.to_json
+    data = json_params
+
+    if IPAddress.find(ip: data['ip'])
+      halt 409, { error: 'Duplicate IP Address', details: 'The IP address you are trying to add already exists.' }.to_json
+    else
+      ip = IPAddress.new(enabled: data['enabled'], ip: data['ip'])
+      if ip.valid?
+        ip.save
+        ip.to_json
+      else
+        validation_error(ip)
+      end
+    end
   end
 
   get '/ips' do
@@ -36,50 +48,36 @@ class App < Sinatra::Base
   end
 
   post '/ips/:id/enable' do
-    ip = IPAddress[params[:id]]
-    if ip
-      ip.update(enabled: true)
-      ip.to_json
-    else
-      halt 404, { error: 'IP Address not found' }.to_json
-    end
+    ip = IPAddress[params[:id]] || ip_not_found
+    ip.update(enabled: true)
+    ip.to_json
   end
 
   post '/ips/:id/disable' do
-    ip = IPAddress[params[:id]]
-    if ip
-      ip.update(enabled: false)
-      ip.to_json
-    else
-      halt 404, { error: "IP Address not found" }.to_json
-    end
+    ip = IPAddress[params[:id]] || ip_not_found
+    ip.update(enabled: false)
+    ip.to_json
   end
 
   get '/ips/:id/stats' do
-    ip = IPAddress[params[:id]]
-    if ip
-      time_from = Time.parse(params[:time_from])
-      time_to = Time.parse(params[:time_to])
-      stats = StatisticsService.calculate(ip, time_from, time_to)
-      stats.to_json
-    else
-      halt 404, { error: 'IP Address not found' }.to_json
-    end
+    ip = IPAddress[params[:id]] || ip_not_found
+    time_from = Time.parse(params[:time_from])
+    time_to = Time.parse(params[:time_to])
+    stats = StatisticsService.calculate(ip, time_from, time_to)
+    stats.to_json
   end
 
   delete '/ips/:id' do
-    ip = IPAddress[params[:id]]
-    halt 404 unless ip
+    ip = IPAddress[params[:id]] || ip_not_found
     ip.destroy
     { message: 'IP address deleted' }.to_json
   end
 end
 
-# Запуск планировщика
 scheduler = Rufus::Scheduler.new
 
 scheduler.every '1m' do
   PingService.perform_checks
 end
 
-# run App.run!
+# App.run!
