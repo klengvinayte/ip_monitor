@@ -13,4 +13,16 @@ module Helpers
   def validation_error(resource)
     halt 422, { error: 'Validation Failed', details: resource.errors.full_messages }.to_json
   end
+
+  def validate_time_param(time_param, name)
+    if time_param
+      begin
+        Time.parse(time_param)
+      rescue ArgumentError
+        halt 400, { error: 'Invalid Time Format', details: "The #{name} parameter is not a valid time." }.to_json
+      end
+    else
+      halt 400, { error: 'Missing Parameter', details: "The #{name} parameter is required." }.to_json
+    end
+  end
 end

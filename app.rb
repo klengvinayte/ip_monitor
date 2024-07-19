@@ -61,8 +61,9 @@ class App < Sinatra::Base
 
   get '/ips/:id/stats' do
     ip = IPAddress[params[:id]] || ip_not_found
-    time_from = Time.parse(params[:time_from])
-    time_to = Time.parse(params[:time_to])
+    time_from = validate_time_param(params[:time_from], 'time_from')
+    time_to = validate_time_param(params[:time_to], 'time_to')
+
     stats = StatisticsService.calculate(ip, time_from, time_to)
     stats.to_json
   end
