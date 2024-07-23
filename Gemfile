@@ -8,3 +8,8 @@ gem 'pg'
 gem 'rackup'
 gem 'rufus-scheduler'
 gem 'rake'
+
+group :test do
+  gem 'rspec'
+  gem 'rack-test'
+end

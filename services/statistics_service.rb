@@ -16,12 +16,12 @@ class StatisticsService
 
     results = DB[query, ip_address.id, time_from, time_to].first
 
-    if results.nil?
+    if results.nil? || results[:total_checks].to_i == 0
       return { error: 'No data available for the specified time range' }
     else
       packet_loss = (results[:failed_checks].to_f / results[:total_checks]) * 100.0
 
-      {
+      stats = {
         mean_rtt: results[:mean_rtt],
         min_rtt: results[:min_rtt],
         max_rtt: results[:max_rtt],
@@ -29,6 +29,13 @@ class StatisticsService
         std_dev_rtt: results[:std_dev_rtt],
         packet_loss: packet_loss
       }
+
+      # Replace NaN values with nil
+      stats.each do |key, value|
+        stats[key] = value.nan? ? nil : value if value.is_a?(Float)
+      end
+
+      stats
     end
   end
 end

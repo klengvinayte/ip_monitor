@@ -1,5 +1,6 @@
 require 'sequel'
 require 'sequel/extensions/migration'
+require 'dotenv/load'
 
 namespace :db do
   desc 'Run migrations'

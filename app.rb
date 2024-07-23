@@ -10,9 +10,7 @@ require_relative 'helpers'
 
 Dotenv.load
 
-DB = Sequel.connect(
-  "postgres://#{ENV['POSTGRES_USER']}:#{ENV['POSTGRES_PASSWORD']}@db:5432/#{ENV['POSTGRES_DB']}"
-)
+DB = Sequel.connect(ENV['DATABASE_URL'])
 
 require './models/ip_address'
 require './models/ping_result'
