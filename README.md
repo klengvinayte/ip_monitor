@@ -1,4 +1,8 @@
-How to run the project with Docker
+### IP address availability monitoring system.
+
+This is an application that allows you to register and delete IP addresses, as well as check their availability
+
+**How to run the project with Docker**
 
 ```angular2html
 docker-compose up --build
@@ -7,7 +11,7 @@ docker-compose up --build
 docker-compose up -d web
 ```
 
-How to set up the database with Docker
+**How to set up the database with Docker**
 ```angular2html
 docker-compose exec web rake db:setup
 ```
@@ -23,7 +27,7 @@ docker-compose exec web rake db:dump_schema
 
 **How to run the tests with Docker**
 
-Run the following commands to run the tests
+Run the following commands to run the tests:
 ```angular2html
 docker-compose run web rake db:migrate RAILS_ENV=test
 ```
