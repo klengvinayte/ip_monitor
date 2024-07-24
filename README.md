@@ -21,7 +21,13 @@ docker-compose exec web rake db:dump_schema
 ```
 
 
-How to run the tests with Docker
+**How to run the tests with Docker**
+
+Run the following commands to run the tests
+```angular2html
+docker-compose run web rake db:migrate RAILS_ENV=test
+```
+
 ```angular2html
 docker-compose run test rspec
 ```

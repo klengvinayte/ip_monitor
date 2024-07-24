@@ -31,6 +31,9 @@ class App < Sinatra::Base
       halt 409, { error: 'Duplicate IP Address', details: 'The IP address you are trying to add already exists.' }.to_json
     else
       ip = IPAddress.new(enabled: data['enabled'], ip: data['ip'])
+
+      ip.enabled_since = Time.now if ip.enabled
+
       if ip.valid?
         ip.save
         ip.to_json
@@ -47,13 +50,13 @@ class App < Sinatra::Base
 
   post '/ips/:id/enable' do
     ip = IPAddress[params[:id]] || ip_not_found
-    ip.update(enabled: true)
+    ip.update(enabled: true, enabled_since: Time.now)
     ip.to_json
   end
 
   post '/ips/:id/disable' do
     ip = IPAddress[params[:id]] || ip_not_found
-    ip.update(enabled: false)
+    ip.update(enabled: false, disabled_at: Time.now)
     ip.to_json
   end
 

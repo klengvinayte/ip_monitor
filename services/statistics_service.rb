@@ -1,5 +1,17 @@
 class StatisticsService
   def self.calculate(ip_address, time_from, time_to)
+    periods = ip_address.active_periods(time_from, time_to)
+
+    # Check if the IP address was active during the specified period
+    if periods.nil? || periods.empty?
+      return { error: 'IP address was not active during the specified period' }
+    end
+
+    # Calculate the combined start and end times for all active periods
+    combined_start = periods.map { |p| p[:start] }.min
+    combined_end = periods.map { |p| p[:end] }.max
+
+    # Query the database for ping results within the combined time range
     query = <<-SQL
       SELECT 
         AVG(rtt) AS mean_rtt,
@@ -14,7 +26,7 @@ class StatisticsService
         AND created_at BETWEEN ? AND ?
     SQL
 
-    results = DB[query, ip_address.id, time_from, time_to].first
+    results = DB[query, ip_address.id, combined_start, combined_end].first
 
     if results.nil? || results[:total_checks].to_i == 0
       return { error: 'No data available for the specified time range' }
@@ -30,7 +42,7 @@ class StatisticsService
         packet_loss: packet_loss
       }
 
-      # Replace NaN values with nil
+      # Remove NaN values from the statistics
       stats.each do |key, value|
         stats[key] = value.nan? ? nil : value if value.is_a?(Float)
       end

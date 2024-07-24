@@ -63,7 +63,7 @@ RSpec.describe App, type: :request do
       it 'returns an error message' do
         get "/ips/#{ip.id}/stats?time_from=2024-01-01&time_to=2024-07-19"
         expect(last_response.status).to eq(200)
-        expect(JSON.parse(last_response.body)['error']).to eq('No data available for the specified time range')
+        expect(JSON.parse(last_response.body)['error']).to eq('IP address was not active during the specified period')
       end
     end
 
