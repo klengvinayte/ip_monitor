@@ -1,0 +1,10 @@
+:concurrency: 5
+:queues:
+  - default
+
+:scheduler:
+  :schedule:
+    perform_checks:
+      cron: "*/1 * * * *"  # Every 1 minute
+      class: "PingService"
+      queue: default

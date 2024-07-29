@@ -1,11 +1,12 @@
 require 'sinatra'
 require 'sequel'
 require 'json'
-require 'rufus-scheduler'
 require 'net/ping'
 require 'dotenv'
 require 'pg'
 require 'ipaddr'
+require 'sidekiq'
+require 'sidekiq-scheduler'
 require_relative 'helpers'
 
 Dotenv.load
@@ -74,12 +75,6 @@ class App < Sinatra::Base
     ip.destroy
     { message: 'IP address deleted' }.to_json
   end
-end
-
-scheduler = Rufus::Scheduler.new
-
-scheduler.every '1m' do
-  PingService.perform_checks
 end
 
 # App.run!

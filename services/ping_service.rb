@@ -1,7 +1,14 @@
 require 'timeout'
 require 'net/ping'
+require_relative '../workers/ping_worker'
 
 class PingService
+  include Sidekiq::Worker
+
+  def perform
+    self.class.perform_checks
+  end
+
   def self.ping(ip_address)
     pinger = Net::Ping::External.new(ip_address.ip)
     pinger.timeout = 1 # 1 second timeout
@@ -22,7 +29,8 @@ class PingService
 
   def self.perform_checks
     IPAddress.where(enabled: true).each do |ip_address|
-      ping(ip_address)
+      PingWorker.perform_async(ip_address.id)
+
     end
   end
 end
