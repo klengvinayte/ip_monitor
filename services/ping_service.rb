@@ -1,9 +1,12 @@
 require 'timeout'
 require 'net/ping'
+require 'concurrent-ruby'
 require_relative '../workers/ping_worker'
 
 class PingService
   include Sidekiq::Worker
+
+  THREAD_POOL_SIZE = 10
 
   def perform
     self.class.perform_checks
@@ -28,9 +31,19 @@ class PingService
   end
 
   def self.perform_checks
-    IPAddress.where(enabled: true).each do |ip_address|
-      PingWorker.perform_async(ip_address.id)
+    thread_pool = Concurrent::FixedThreadPool.new(THREAD_POOL_SIZE)
 
+
+    IPAddress.where(enabled: true).each do |ip_address|
+      # PingWorker.perform_async(ip_address.id)
+
+      thread_pool.post do
+        PingWorker.perform_async(ip_address.id)
+      end
+      # thread_pool.post { ping(ip_address) }
+      #
+      thread_pool.shutdown
+      thread_pool.wait_for_termination
     end
   end
 end
