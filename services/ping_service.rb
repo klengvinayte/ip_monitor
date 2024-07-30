@@ -1,15 +1,26 @@
 require 'timeout'
 require 'net/ping'
-require 'concurrent-ruby'
-require_relative '../workers/ping_worker'
+require 'sidekiq'
+require 'sidekiq-scheduler'
+require_relative '../workers/ping_executor'
 
 class PingService
   include Sidekiq::Worker
 
-  THREAD_POOL_SIZE = 10
+  sidekiq_options retry: false, queue: :ping_service
+
+  EXECUTORS_COUNT = 10
 
   def perform
     self.class.perform_checks
+  end
+
+  def self.perform_checks
+    ip_ids = IPAddress.where(enabled: true).select_map(:id)
+
+    ip_ids.each_slice(EXECUTORS_COUNT) do |group|
+      PingExecutor.perform_async(group)
+    end
   end
 
   def self.ping(ip_address)
@@ -17,7 +28,6 @@ class PingService
     pinger.timeout = 1 # 1 second timeout
 
     begin
-      # We wrap the ping operation in a timeout block to ensure that it doesn't hang
       Timeout.timeout(pinger.timeout) do
         result = pinger.ping
         duration = pinger.duration
@@ -25,25 +35,7 @@ class PingService
         PingResult.create(ip_address_id: ip_address.id, success: success, rtt: success ? duration : nil, created_at: Time.now)
       end
     rescue Timeout::Error
-      # If the ping operation times out, we consider it a failure
       PingResult.create(ip_address_id: ip_address.id, success: false, created_at: Time.now)
-    end
-  end
-
-  def self.perform_checks
-    thread_pool = Concurrent::FixedThreadPool.new(THREAD_POOL_SIZE)
-
-
-    IPAddress.where(enabled: true).each do |ip_address|
-      # PingWorker.perform_async(ip_address.id)
-
-      thread_pool.post do
-        PingWorker.perform_async(ip_address.id)
-      end
-      # thread_pool.post { ping(ip_address) }
-      #
-      thread_pool.shutdown
-      thread_pool.wait_for_termination
     end
   end
 end
