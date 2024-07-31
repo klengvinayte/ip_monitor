@@ -25,6 +25,15 @@ docker-compose exec web rake db:dump_schema
 ```
 
 
+**How to set up the TimescaleDB extension**
+```angular2html
+docker-compose exec db psql -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+```
+
+```angular2html
+CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+```
+
 **How to run the tests with Docker**
 
 Run the following commands to run the tests:
