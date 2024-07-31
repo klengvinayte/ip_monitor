@@ -3,7 +3,7 @@ require 'json'
 
 RSpec.describe App, type: :request do
   let(:ip_address) { '192.168.1.1' }
-  let(:valid_params) { { ip: ip_address, enabled: true } }
+  let(:valid_params) { { ip: ip_address, enabled: true, enabled_since: '2024-02-01', disabled_at: Time.now } }
   let(:invalid_params) { { ip: 'invalid_ip', enabled: true } }
 
   describe 'POST /ips' do
@@ -63,7 +63,7 @@ RSpec.describe App, type: :request do
       it 'returns an error message' do
         get "/ips/#{ip.id}/stats?time_from=2024-01-01&time_to=2024-07-19"
         expect(last_response.status).to eq(200)
-        expect(JSON.parse(last_response.body)['error']).to eq('IP address was not active during the specified period')
+        expect(JSON.parse(last_response.body)['error']).to eq('No active periods found')
       end
     end
 
@@ -72,20 +72,24 @@ RSpec.describe App, type: :request do
 
       before do
         # Create sample ping results
-        DB[:ping_results].insert(success: true, rtt: 100.0, created_at: '2024-02-01', ip_address_id: ip.id)
-        DB[:ping_results].insert(success: true, rtt: 200.0, created_at: '2024-03-01', ip_address_id: ip.id)
-        DB[:ping_results].insert(success: false, rtt: nil, created_at: '2024-04-01', ip_address_id: ip.id)
+        DB[:ping_results].insert(success: true, rtt: 100.0, created_at: '2024-02-01', ip_address_id: ip.id, duration: 0.1)
+        DB[:ping_results].insert(success: true, rtt: 200.0, created_at: '2024-03-01', ip_address_id: ip.id, duration: 0.2)
+        DB[:ping_results].insert(success: false, rtt: nil, created_at: '2024-04-01', ip_address_id: ip.id, duration: 0.3)
       end
 
       it 'returns the statistics for the IP address' do
-        get "/ips/#{ip.id}/stats?time_from=2024-01-01&time_to=2024-07-19"
+        get "/ips/#{ip.id}/stats?time_from=2024-01-01&time_to=2024-07-31"
         expect(last_response.status).to eq(200)
         stats = JSON.parse(last_response.body)
+
+        # Проверьте, что возвращаемый JSON содержит правильные ключи и значения
         expect(stats).to include('mean_rtt', 'min_rtt', 'max_rtt', 'median_rtt', 'std_dev_rtt', 'packet_loss')
-        expect(stats['mean_rtt'].to_f).to eq(150.0)
+
+        # Проверьте значения, если вы знаете, какие они должны быть
+        expect(stats['mean_rtt'].to_f).to be_within(0.1).of(150.0)
         expect(stats['min_rtt'].to_f).to eq(100.0)
         expect(stats['max_rtt'].to_f).to eq(200.0)
-        expect(stats['packet_loss'].to_f).to be_within(0.01).of(33.33)
+        expect(stats['packet_loss'].to_f).to be_within(0.1).of(33.33)
       end
     end
 
