@@ -2,13 +2,14 @@ require 'sequel'
 require 'bundler/setup'
 require 'rspec'
 require 'rack/test'
-require_relative '../app'
+require 'sidekiq/testing'
 require 'dotenv/load'
+require_relative '../app'
 
 ENV['RACK_ENV'] = 'test'
 ENV['DATABASE_URL'] = ENV['DATABASE_URL_TEST']
 
-DB = Sequel.connect(ENV['DATABASE_URL'])
+# DB = Sequel.connect(ENV['DATABASE_URL'])
 
 RSpec.configure do |config|
   config.include Rack::Test::Methods

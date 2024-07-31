@@ -7,11 +7,11 @@ require 'pg'
 require 'ipaddr'
 require 'sidekiq'
 require 'sidekiq-scheduler'
-require_relative 'helpers'
+require_relative 'helpers/helpers'
 
 Dotenv.load
 
-DB = Sequel.connect(ENV['DATABASE_URL'])
+DB = Sequel.connect(ENV['DATABASE_URL'], max_connections: 20)
 
 require './models/ip_address'
 require './models/ping_result'
