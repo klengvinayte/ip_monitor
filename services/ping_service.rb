@@ -1,9 +1,14 @@
+# frozen_string_literal: true
+
 require 'timeout'
 require 'net/ping'
 require 'sidekiq'
 require 'sidekiq-scheduler'
 require_relative '../workers/ping_executor'
 
+# Service to ping IP addresses.
+# Pings all enabled IP addresses.
+# Pings are performed in parallel using the PingExecutor worker.
 class PingService
   include Sidekiq::Worker
 
@@ -32,7 +37,8 @@ class PingService
         result = pinger.ping
         duration = pinger.duration
         success = result && duration <= pinger.timeout
-        PingResult.create(ip_address_id: ip_address.id, success: success, rtt: success ? duration : nil, created_at: Time.now)
+        PingResult.create(ip_address_id: ip_address.id, success:, rtt: success ? duration : nil,
+                          created_at: Time.now)
       end
     rescue Timeout::Error
       PingResult.create(ip_address_id: ip_address.id, success: false, created_at: Time.now)

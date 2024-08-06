@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'sinatra'
 require 'sequel'
 require 'json'
@@ -18,6 +20,8 @@ require './models/ping_result'
 require './services/ping_service'
 require './services/statistics_service'
 
+# Represents the main application.
+# Contains the routes for the API.
 class App < Sinatra::Base
   helpers Helpers
 
@@ -29,7 +33,8 @@ class App < Sinatra::Base
     data = json_params
 
     if IPAddress.find(ip: data['ip'])
-      halt 409, { error: 'Duplicate IP Address', details: 'The IP address you are trying to add already exists.' }.to_json
+      halt 409, { error: 'Duplicate IP Address',
+                  details: 'The IP address you are trying to add already exists.' }.to_json
     else
       ip = IPAddress.new(enabled: data['enabled'], ip: data['ip'])
 

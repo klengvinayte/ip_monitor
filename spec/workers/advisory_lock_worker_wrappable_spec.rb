@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'sidekiq/testing'
 require_relative '../../workers/advisory_lock_worker_wrappable'
@@ -13,12 +15,12 @@ end
 
 RSpec.describe AdvisoryLockWorkerWrappable do
   let(:worker) { TestWorker.new }
-  let(:lock_query) { "SELECT pg_advisory_xact_lock(?)" }
+  let(:lock_query) { 'SELECT pg_advisory_xact_lock(?)' }
   let(:lock_value) { TestWorker.name.hash }
-  let(:fixed_lock_value) { 1234567890 }
+  let(:fixed_lock_value) { 1_234_567_890 }
 
   before do
-    allow(DB).to receive(:[]).with(lock_query, TestWorker.name.hash).and_return(DB["SELECT 1"])
+    allow(DB).to receive(:[]).with(lock_query, TestWorker.name.hash).and_return(DB['SELECT 1'])
     allow_any_instance_of(TestWorker).to receive(:super)
   end
 
@@ -31,7 +33,7 @@ RSpec.describe AdvisoryLockWorkerWrappable do
 
     it 'logs an error when acquiring the lock fails' do
       allow(DB).to receive(:[]).with(lock_query, lock_value).and_raise(Sequel::DatabaseError.new('DB error'))
-      expect(Sidekiq.logger).to receive(:error).with("Failed to acquire lock TestWorker: DB error")
+      expect(Sidekiq.logger).to receive(:error).with('Failed to acquire lock TestWorker: DB error')
 
       worker.perform
     end

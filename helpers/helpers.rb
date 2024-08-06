@@ -1,4 +1,7 @@
-# helpers.rb
+# frozen_string_literal: true
+
+# Represents an IP address that can be pinged.
+# An IP address can have many ping results.
 module Helpers
   def json_params
     JSON.parse(request.body.read)

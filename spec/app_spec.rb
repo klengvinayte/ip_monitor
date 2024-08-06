@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'json'
 
@@ -72,9 +74,12 @@ RSpec.describe App, type: :request do
 
       before do
         # Create sample ping results
-        DB[:ping_results].insert(success: true, rtt: 100.0, created_at: '2024-02-01', ip_address_id: ip.id, duration: 0.1)
-        DB[:ping_results].insert(success: true, rtt: 200.0, created_at: '2024-03-01', ip_address_id: ip.id, duration: 0.2)
-        DB[:ping_results].insert(success: false, rtt: nil, created_at: '2024-04-01', ip_address_id: ip.id, duration: 0.3)
+        DB[:ping_results].insert(success: true, rtt: 100.0, created_at: '2024-02-01', ip_address_id: ip.id,
+                                 duration: 0.1)
+        DB[:ping_results].insert(success: true, rtt: 200.0, created_at: '2024-03-01', ip_address_id: ip.id,
+                                 duration: 0.2)
+        DB[:ping_results].insert(success: false, rtt: nil, created_at: '2024-04-01', ip_address_id: ip.id,
+                                 duration: 0.3)
       end
 
       it 'returns the statistics for the IP address' do

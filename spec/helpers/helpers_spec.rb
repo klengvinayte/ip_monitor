@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'sinatra/base'
 require 'rack/test'
@@ -14,7 +16,7 @@ RSpec.describe Helpers do
       get '/validate_time' do
         time_from = validate_time_param(params[:time_from], 'time_from')
         time_to = validate_time_param(params[:time_to], 'time_to')
-        { time_from: time_from, time_to: time_to }.to_json
+        { time_from:, time_to: }.to_json
       end
     end
   end

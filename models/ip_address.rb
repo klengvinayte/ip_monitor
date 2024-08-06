@@ -1,11 +1,15 @@
+# frozen_string_literal: true
+
+# Represents an IP address that can be pinged.
+# An IP address can have many ping results.
 class IPAddress < Sequel::Model
   one_to_many :ping_results
 
-  def to_json
+  def to_json(*_args)
     {
-      id: id,
-      ip: ip,
-      enabled: enabled
+      id:,
+      ip:,
+      enabled:
     }.to_json
   end
 

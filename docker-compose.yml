@@ -48,6 +48,20 @@ services:
     env_file:
       - .env
 
+  rubocop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bundle exec rubocop
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+
   test:
     build:
       context: .

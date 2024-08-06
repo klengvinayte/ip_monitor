@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'sidekiq/testing'
 require 'timeout'
@@ -22,16 +24,16 @@ RSpec.describe PingService, type: :worker do
   describe '.perform_checks' do
     it 'queues PingExecutor jobs for enabled IP addresses' do
       ip_address # Ensure IP address is created
-      expect {
+      expect do
         PingService.perform_checks
-      }.to change(PingExecutor.jobs, :size).by(1)
+      end.to change(PingExecutor.jobs, :size).by(1)
     end
 
     it 'does not queue PingExecutor jobs for disabled IP addresses' do
       ip_address_disabled # Ensure disabled IP address is created
-      expect {
+      expect do
         PingService.perform_checks
-      }.not_to change(PingExecutor.jobs, :size)
+      end.not_to change(PingExecutor.jobs, :size)
     end
   end
 
@@ -41,9 +43,9 @@ RSpec.describe PingService, type: :worker do
         allow_any_instance_of(Net::Ping::External).to receive(:ping).and_return(true)
         allow_any_instance_of(Net::Ping::External).to receive(:duration).and_return(0.5)
 
-        expect {
+        expect do
           PingService.ping(ip_address)
-        }.to change { PingResult.where(success: true).count }.by(1)
+        end.to change { PingResult.where(success: true).count }.by(1)
 
         result = PingResult.last
         expect(result.rtt).to eq(0.5)
@@ -55,9 +57,9 @@ RSpec.describe PingService, type: :worker do
       it 'creates an unsuccessful PingResult' do
         allow_any_instance_of(Net::Ping::External).to receive(:ping).and_return(false)
 
-        expect {
+        expect do
           PingService.ping(ip_address)
-        }.to change { PingResult.where(success: false).count }.by(1)
+        end.to change { PingResult.where(success: false).count }.by(1)
 
         result = PingResult.last
         expect(result.rtt).to be_nil
@@ -70,9 +72,9 @@ RSpec.describe PingService, type: :worker do
         allow_any_instance_of(Net::Ping::External).to receive(:ping).and_return(true)
         allow_any_instance_of(Net::Ping::External).to receive(:duration).and_return(2)
 
-        expect {
+        expect do
           PingService.ping(ip_address)
-        }.to change { PingResult.where(success: false).count }.by(1)
+        end.to change { PingResult.where(success: false).count }.by(1)
 
         result = PingResult.last
         expect(result.rtt).to be_nil
@@ -84,9 +86,9 @@ RSpec.describe PingService, type: :worker do
       it 'creates an unsuccessful PingResult' do
         allow_any_instance_of(Net::Ping::External).to receive(:ping).and_raise(Timeout::Error)
 
-        expect {
+        expect do
           PingService.ping(ip_address)
-        }.to change { PingResult.where(success: false).count }.by(1)
+        end.to change { PingResult.where(success: false).count }.by(1)
 
         result = PingResult.last
         expect(result.rtt).to be_nil

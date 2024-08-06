@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'sequel'
 require 'sequel/extensions/migration'
 require 'dotenv/load'
@@ -36,7 +38,7 @@ namespace :db do
           opts = []
           opts << "null: #{details[:allow_null]}" unless details[:allow_null].nil?
           opts << "default: #{details[:default]}" unless details[:default].nil?
-          opts << "primary_key: true" if details[:primary_key]
+          opts << 'primary_key: true' if details[:primary_key]
           file.puts "  #{name} #{type}, #{opts.join(', ')}"
         end
         file.puts "end\n\n"
@@ -45,3 +47,11 @@ namespace :db do
     puts 'Schema dumped to db/schema.rb'
   end
 end
+
+require 'rubocop/rake_task'
+
+RuboCop::RakeTask.new do |task|
+  task.patterns = ['**/*.rb']
+end
+
+task default: :rubocop
