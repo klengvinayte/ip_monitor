@@ -10,7 +10,7 @@ Sidekiq::Testing.fake!
 
 RSpec.describe PingExecutor, type: :worker do
   let(:ip_address) { IPAddress.create(ip: '192.168.1.1', enabled: true) }
-  let(:ip_address_2) { IPAddress.create(ip: '192.168.1.2', enabled: true) }
+  let(:ip_address2) { IPAddress.create(ip: '192.168.1.2', enabled: true) }
 
   describe '#perform' do
     it 'calls PingService.ping for each IP address' do

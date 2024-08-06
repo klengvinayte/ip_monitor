@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This module is used to wrap a Sidekiq worker with a Postgres advisory lock.
 # The lock is acquired before the worker is executed and released after the worker has finished.
 module AdvisoryLockWorkerWrappable

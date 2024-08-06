@@ -29,7 +29,7 @@ class StatisticsService
 
     results = DB[stats_query, ip_address.id, combined_start, combined_end].first
 
-    if results.nil? || results[:total_checks].to_i == 0
+    if results.nil? || results[:total_checks].to_i.zero?
       return { error: 'No data available for the specified time range' }
     end
 
