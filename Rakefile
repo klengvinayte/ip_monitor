@@ -4,7 +4,6 @@ require 'sequel'
 require 'sequel/extensions/migration'
 require 'dotenv/load'
 
-# Константа для подключения к базе данных
 DB = Sequel.connect(ENV['DATABASE_URL'])
 
 namespace :db do

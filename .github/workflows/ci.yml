@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start services with Docker Compose
+        run: |
+          docker compose up -d --build
+
+      - name: Wait for Postgres
+        run: |
+          docker compose exec -T db \
+            bash -c "until pg_isready -U ${POSTGRES_USER:-postgres}; do sleep 1; done"
+
+      - name: Prepare database
+        run: |
+          docker compose exec -T web \
+            bundle exec rake db:setup
+
+      - name: Run test suite
+        run: |
+          docker compose exec -T test \
+            bundle exec rspec
+
+      - name: Lint with RuboCop
+        run: |
+          docker compose exec -T rubocop \
+            bundle exec rubocop --fail-level C
+
+      - name: Shutdown Docker Compose
+        if: always()
+        run: |
+          docker compose down --volumes

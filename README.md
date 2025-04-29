@@ -44,3 +44,6 @@ docker-compose run web rake db:migrate RAILS_ENV=test
 ```angular2html
 docker-compose run test rspec
 ```
+
+[CI](https://github.com/<YOUR-USER>/<YOUR-REPO>/actions/workflows/ci.yml/badge.svg)
+
