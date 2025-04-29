@@ -1,5 +1,7 @@
 ### IP address availability monitoring system.
 
+[CI](https://github.com/klengvinayte/ip_monitor/actions/workflows/ci.yml/badge.svg)
+
 This is an application that allows you to register and delete IP addresses, as well as check their availability
 
 **How to run the project with Docker**
@@ -44,6 +46,4 @@ docker-compose run web rake db:migrate RAILS_ENV=test
 ```angular2html
 docker-compose run test rspec
 ```
-
-[CI](https://github.com/<YOUR-USER>/<YOUR-REPO>/actions/workflows/ci.yml/badge.svg)
 
