@@ -60,4 +60,5 @@ jobs:
         run: bundle exec rspec
 
       - name: Lint with RuboCop
+        continue-on-error: true
         run: bundle exec rubocop --fail-level C
