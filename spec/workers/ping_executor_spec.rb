@@ -14,13 +14,13 @@ RSpec.describe PingExecutor, type: :worker do
 
   describe '#perform' do
     it 'calls PingService.ping for each IP address' do
-      ip_ids = [ip_address.id, ip_address_2.id]
+      ip_ids = [ip_address.id, ip_address2.id]
       allow(PingService).to receive(:ping)
 
       PingExecutor.new.perform(ip_ids)
 
       expect(PingService).to have_received(:ping).with(ip_address)
-      expect(PingService).to have_received(:ping).with(ip_address_2)
+      expect(PingService).to have_received(:ping).with(ip_address2)
     end
   end
 end
